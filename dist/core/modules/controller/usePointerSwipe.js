@@ -39,7 +39,10 @@ export function usePointerSwipe(subscribeSensors, isSwipeValid, containerWidth, 
         clearPointer(event);
     });
     const onPointerMove = useEventCallback((event) => {
-        console.log(event);
+        if (event.pointerType === 'touch' && pointers.current.length > 1)
+            return;
+        if (event.pointerType === 'mouse' && event.buttons !== 1)
+            return;
         const pointer = pointers.current.find((p) => p.pointerId === event.pointerId);
         if (pointer) {
             const isCurrentPointer = activePointer.current === event.pointerId;
