@@ -80,7 +80,8 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+#include dist folder for using the github link in package.json
+#dist
 
 # Gatsby files
 .cache/

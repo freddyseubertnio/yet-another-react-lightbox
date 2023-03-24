@@ -75,6 +75,13 @@ export function usePointerSwipe<T extends Element = Element>(
     });
 
     const onPointerMove = useEventCallback((event: React.PointerEvent) => {
+        // do not react on more than one finger
+        // if (pointers.current.length > 1) return;
+        // do only react on left mouse button
+        // if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+        console.log(event);
+
         const pointer = pointers.current.find((p) => p.pointerId === event.pointerId);
         if (pointer) {
             const isCurrentPointer = activePointer.current === event.pointerId;
