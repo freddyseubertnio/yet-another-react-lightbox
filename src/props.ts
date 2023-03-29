@@ -19,6 +19,16 @@ export const LightboxDefaultProps: LightboxProps = {
             navigation: "ease-in-out",
         },
     },
+    // Custom Animation
+    customAnimation: {
+        fade: 250,
+        swipe: 500,
+        easing: {
+            fade: "ease",
+            swipe: "ease-out",
+            navigation: "ease-in-out",
+        },
+    },
     carousel: {
         finite: false,
         preload: 2,

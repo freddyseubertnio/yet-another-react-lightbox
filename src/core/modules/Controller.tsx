@@ -63,7 +63,7 @@ export const ControllerContext = React.createContext<ControllerContextType | nul
 export const useController = makeUseContext("useController", "ControllerContext", ControllerContext);
 
 export function Controller({ children, ...props }: ComponentProps) {
-    const { carousel, animation, controller, on, styles, render } = props;
+    const { carousel, animation, customAnimation, controller, on, styles, render } = props;
 
     const [toolbarWidth, setToolbarWidth] = React.useState<number>();
 
@@ -139,13 +139,97 @@ export function Controller({ children, ...props }: ComponentProps) {
             return undefined;
         }
     );
-
+    // Here you can change the animation duration
     const swipe = useEventCallback(
         (action: { direction?: "prev" | "next"; count?: number; offset?: number; duration?: number }) => {
             const currentSwipeOffset = action.offset || 0;
+            // Custom Animation
             const swipeDuration = !currentSwipeOffset ? animation.navigation ?? animation.swipe : animation.swipe;
             const swipeEasing =
                 !currentSwipeOffset && !isAnimationPlaying() ? animation.easing.navigation : animation.easing.swipe;
+
+            let { direction } = action;
+            const count = action.count ?? 1;
+
+            let newSwipeState = SwipeState.ANIMATION;
+            let newSwipeAnimationDuration = swipeDuration * count;
+
+            if (!direction) {
+                const containerWidth = containerRect?.width;
+
+                const elapsedTime = action.duration || 0;
+                const expectedTime = containerWidth
+                    ? (swipeDuration / containerWidth) * Math.abs(currentSwipeOffset)
+                    : swipeDuration;
+
+                if (count !== 0) {
+                    if (elapsedTime < expectedTime) {
+                        newSwipeAnimationDuration =
+                            (newSwipeAnimationDuration / expectedTime) * Math.max(elapsedTime, expectedTime / 5);
+                    } else if (containerWidth) {
+                        newSwipeAnimationDuration =
+                            (swipeDuration / containerWidth) * (containerWidth - Math.abs(currentSwipeOffset));
+                    }
+
+                    direction = rtl(currentSwipeOffset) > 0 ? ACTION_PREV : ACTION_NEXT;
+                } else {
+                    newSwipeAnimationDuration = swipeDuration / 2;
+                }
+            }
+
+            let increment = 0;
+            if (direction === ACTION_PREV) {
+                if (isSwipeValid(rtl(1))) {
+                    increment = -count;
+                } else {
+                    newSwipeState = SwipeState.NONE;
+                    newSwipeAnimationDuration = swipeDuration;
+                }
+            } else if (direction === ACTION_NEXT) {
+                if (isSwipeValid(rtl(-1))) {
+                    increment = count;
+                } else {
+                    newSwipeState = SwipeState.NONE;
+                    newSwipeAnimationDuration = swipeDuration;
+                }
+            }
+
+            newSwipeAnimationDuration = Math.round(newSwipeAnimationDuration);
+
+            cleanupSwipeOffset(() => {
+                setSwipeOffset(0);
+                setSwipeState(SwipeState.NONE);
+            }, newSwipeAnimationDuration);
+
+            if (carouselRef.current) {
+                prepareAnimation({
+                    rect: carouselRef.current.getBoundingClientRect(),
+                    index: state.globalIndex,
+                });
+            }
+
+            setSwipeState(newSwipeState);
+
+            publish(ACTION_SWIPE, {
+                type: "swipe",
+                increment,
+                duration: newSwipeAnimationDuration,
+                easing: swipeEasing,
+            });
+        }
+    );
+    // Custom Animation
+    const customSwipe = useEventCallback(
+        (action: { direction?: "prev" | "next"; count?: number; offset?: number; duration?: number }) => {
+            const currentSwipeOffset = action.offset || 0;
+            // Custom Animation
+            const swipeDuration = !currentSwipeOffset
+                ? customAnimation.navigation ?? customAnimation.swipe
+                : customAnimation.swipe;
+            const swipeEasing =
+                !currentSwipeOffset && !isAnimationPlaying()
+                    ? customAnimation.easing.navigation
+                    : customAnimation.easing.swipe;
 
             let { direction } = action;
             const count = action.count ?? 1;
@@ -228,6 +312,7 @@ export function Controller({ children, ...props }: ComponentProps) {
         subscribeSensors,
         isSwipeValid,
         containerRect?.width || 0,
+        // Custom Animation
         animation.swipe,
         () => setSwipeState(SwipeState.SWIPE), // onSwipeStart
         (offset: number) => setSwipeOffset(offset), // onSwipeProgress
@@ -235,9 +320,22 @@ export function Controller({ children, ...props }: ComponentProps) {
         (offset: number) => swipe({ offset, count: 0 }), // onSwipeCancel
     ] as const;
 
-    usePointerSwipe(...swipeParams);
+    // Custom Animation
+    const customSwipeParams = [
+        subscribeSensors,
+        isSwipeValid,
+        containerRect?.width || 0,
+        // Custom Animation
+        animation.swipe,
+        () => setSwipeState(SwipeState.SWIPE), // onSwipeStart
+        (offset: number) => setSwipeOffset(offset), // onSwipeProgress
+        (offset: number, duration: number) => customSwipe({ offset, duration, count: 1 }), // onSwipeFinish
+        (offset: number) => customSwipe({ offset, count: 0 }), // onSwipeCancel
+    ] as const;
 
-    useWheelSwipe(swipeState, ...swipeParams);
+    usePointerSwipe(...customSwipeParams);
+
+    useWheelSwipe(swipeState, ...customSwipeParams);
 
     const focusOnMount = useEventCallback(() => {
         if (controller.focus) {

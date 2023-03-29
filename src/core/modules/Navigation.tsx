@@ -27,7 +27,6 @@ export type NavigationButtonProps = {
 
 export function NavigationButton({ label, icon, renderIcon, action, onClick, disabled }: NavigationButtonProps) {
     const { labels } = useLightboxProps();
-
     return (
         <IconButton
             label={translateLabel(labels, label)}

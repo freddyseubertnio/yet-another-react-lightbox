@@ -40,6 +40,8 @@ function mergeAnimation(defaultAnimation: AnimationSettings, animation: DeepPart
 export function Lightbox({
     carousel,
     animation,
+    // Custom Animation
+    customAnimation,
     render,
     toolbar,
     controller,
@@ -51,6 +53,8 @@ export function Lightbox({
 }: LightboxExternalProps) {
     const {
         animation: defaultAnimation,
+        // Custom Animation
+        customAnimation: defaultCustomAnimation,
         carousel: defaultCarousel,
         render: defaultRender,
         toolbar: defaultToolbar,
@@ -79,6 +83,8 @@ export function Lightbox({
 
     const props = augmentation({
         animation: mergeAnimation(defaultAnimation, animation),
+        // Custom Animation
+        customAnimation: mergeAnimation(defaultCustomAnimation, customAnimation),
         carousel: { ...defaultCarousel, ...carousel },
         render: { ...defaultRender, ...render },
         toolbar: { ...defaultToolbar, ...toolbar },

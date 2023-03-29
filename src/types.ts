@@ -1,7 +1,10 @@
 import * as React from "react";
 
 /** Lightbox external props */
-export type LightboxExternalProps = DeepPartial<LightboxProps, "carousel" | "animation" | "controller" | "toolbar">;
+export type LightboxExternalProps = DeepPartial<
+    LightboxProps,
+    "carousel" | "animation" | "customAnimation" | "controller" | "toolbar"
+>;
 
 /** Lightbox properties */
 export interface LightboxProps {
@@ -25,6 +28,8 @@ export interface LightboxProps {
     carousel: CarouselSettings;
     /** animation settings */
     animation: AnimationSettings;
+    /** Custom Animation settings */
+    customAnimation: AnimationSettings;
     /** controller settings */
     controller: ControllerSettings;
     /** lifecycle callbacks */

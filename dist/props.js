@@ -17,6 +17,15 @@ export const LightboxDefaultProps = {
             navigation: "ease-in-out",
         },
     },
+    customAnimation: {
+        fade: 250,
+        swipe: 500,
+        easing: {
+            fade: "ease",
+            swipe: "ease-out",
+            navigation: "ease-in-out",
+        },
+    },
     carousel: {
         finite: false,
         preload: 2,

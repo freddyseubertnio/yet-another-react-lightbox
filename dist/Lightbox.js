@@ -14,8 +14,8 @@ function mergeAnimation(defaultAnimation, animation = {}) {
         ...restAnimation,
     };
 }
-export function Lightbox({ carousel, animation, render, toolbar, controller, on, plugins, slides, index, ...restProps }) {
-    const { animation: defaultAnimation, carousel: defaultCarousel, render: defaultRender, toolbar: defaultToolbar, controller: defaultController, on: defaultOn, slides: defaultSlides, index: defaultIndex, plugins: defaultPlugins, ...restDefaultProps } = LightboxDefaultProps;
+export function Lightbox({ carousel, animation, customAnimation, render, toolbar, controller, on, plugins, slides, index, ...restProps }) {
+    const { animation: defaultAnimation, customAnimation: defaultCustomAnimation, carousel: defaultCarousel, render: defaultRender, toolbar: defaultToolbar, controller: defaultController, on: defaultOn, slides: defaultSlides, index: defaultIndex, plugins: defaultPlugins, ...restDefaultProps } = LightboxDefaultProps;
     const { config, augmentation } = withPlugins([
         createNode(PortalModule, [
             createNode(NoScrollModule, [
@@ -29,6 +29,7 @@ export function Lightbox({ carousel, animation, render, toolbar, controller, on,
     ], plugins || defaultPlugins);
     const props = augmentation({
         animation: mergeAnimation(defaultAnimation, animation),
+        customAnimation: mergeAnimation(defaultCustomAnimation, customAnimation),
         carousel: { ...defaultCarousel, ...carousel },
         render: { ...defaultRender, ...render },
         toolbar: { ...defaultToolbar, ...toolbar },
