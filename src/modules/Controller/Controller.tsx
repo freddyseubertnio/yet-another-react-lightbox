@@ -55,7 +55,7 @@ export const ControllerContext = React.createContext<ControllerContextType | nul
 export const useController = makeUseContext("useController", "ControllerContext", ControllerContext);
 
 export function Controller({ children, ...props }: ComponentProps) {
-  const { carousel, animation, controller, on, styles, render } = props;
+  const { carousel, animation, customAnimation, controller, on, styles, render } = props;
 
   const [toolbarWidth, setToolbarWidth] = React.useState<number>();
 
@@ -276,6 +276,88 @@ export function Controller({ children, ...props }: ComponentProps) {
     },
   );
 
+  const customSwipe = useEventCallback(
+    (action: { direction?: "prev" | "next"; count?: number; offset?: number; duration?: number }) => {
+      const currentSwipeOffset = action.offset || 0;
+      // Custom Animation
+      const swipeDuration = !currentSwipeOffset
+        ? customAnimation.navigation ?? customAnimation.swipe
+        : customAnimation.swipe;
+      // CUstom Animation
+      const swipeEasing =
+        !currentSwipeOffset && !isAnimationPlaying() ? customAnimation.easing.navigation : customAnimation.easing.swipe;
+
+      let { direction } = action;
+      const count = action.count ?? 1;
+
+      let newSwipeState = SwipeState.ANIMATION;
+      let newSwipeAnimationDuration = swipeDuration * count;
+
+      if (!direction) {
+        const containerWidth = containerRect?.width;
+
+        const elapsedTime = action.duration || 0;
+        const expectedTime = containerWidth
+          ? (swipeDuration / containerWidth) * Math.abs(currentSwipeOffset)
+          : swipeDuration;
+
+        if (count !== 0) {
+          if (elapsedTime < expectedTime) {
+            newSwipeAnimationDuration =
+              (newSwipeAnimationDuration / expectedTime) * Math.max(elapsedTime, expectedTime / 5);
+          } else if (containerWidth) {
+            newSwipeAnimationDuration =
+              (swipeDuration / containerWidth) * (containerWidth - Math.abs(currentSwipeOffset));
+          }
+
+          direction = rtl(currentSwipeOffset) > 0 ? ACTION_PREV : ACTION_NEXT;
+        } else {
+          newSwipeAnimationDuration = swipeDuration / 2;
+        }
+      }
+
+      let increment = 0;
+      if (direction === ACTION_PREV) {
+        if (isSwipeValid(rtl(1))) {
+          increment = -count;
+        } else {
+          newSwipeState = SwipeState.NONE;
+          newSwipeAnimationDuration = swipeDuration;
+        }
+      } else if (direction === ACTION_NEXT) {
+        if (isSwipeValid(rtl(-1))) {
+          increment = count;
+        } else {
+          newSwipeState = SwipeState.NONE;
+          newSwipeAnimationDuration = swipeDuration;
+        }
+      }
+
+      newSwipeAnimationDuration = Math.round(newSwipeAnimationDuration);
+
+      cleanupSwipeOffset(() => {
+        setSwipeOffset(0);
+        setSwipeState(SwipeState.NONE);
+      }, newSwipeAnimationDuration);
+
+      if (carouselRef.current) {
+        prepareAnimation({
+          rect: carouselRef.current.getBoundingClientRect(),
+          index: state.globalIndex,
+        });
+      }
+
+      setSwipeState(newSwipeState);
+
+      publish(ACTION_SWIPE, {
+        type: "swipe",
+        increment,
+        duration: newSwipeAnimationDuration,
+        easing: swipeEasing,
+      });
+    },
+  );
+
   React.useEffect(() => {
     if (state.animation?.increment && state.animation?.duration) {
       cleanupAnimationIncrement(() => dispatch({ type: "swipe", increment: 0 }), state.animation.duration);
@@ -292,9 +374,9 @@ export function Controller({ children, ...props }: ComponentProps) {
     // onSwipeProgress
     (offset: number) => setSwipeOffset(offset),
     // onSwipeFinish
-    (offset: number, duration: number) => swipe({ offset, duration, count: 1 }),
+    (offset: number, duration: number) => customSwipe({ offset, duration, count: 1 }),
     // onSwipeCancel
-    (offset: number) => swipe({ offset, count: 0 }),
+    (offset: number) => customSwipe({ offset, count: 0 }),
   ] as const;
 
   const pullDownParams = [
