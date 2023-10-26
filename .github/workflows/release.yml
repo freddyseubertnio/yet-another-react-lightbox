@@ -1,40 +1,50 @@
 name: Release
 
 on:
-    push:
-        branches: [ main, next ]
+  push:
+    branches: [main, next]
 
 jobs:
-    release:
-        name: Release
-        runs-on: ubuntu-latest
+  release:
+    name: Release
+    runs-on: ubuntu-latest
 
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      discussions: write
+      pull-requests: write
 
-            -   name: Setup Node.js
-                uses: actions/setup-node@v3
-                with:
-                    node-version: 18.x
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-            -   name: Install dependencies
-                run: npx ci
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-            -   name: Install semantic-release extra plugins
-                run: npm install --save-dev @semantic-release/changelog @semantic-release/github
+      - name: Install dependencies
+        run: npx ci
 
-            -   name: Test
-                run: npm run test
+      - name: Install semantic-release extra plugins
+        run: npm install --save-dev @semantic-release/changelog @semantic-release/github
 
-            -   name: Build
-                run: npm run build
+      - name: Build
+        run: npm run build
 
-            -   name: Cleanup
-                run: npm pkg delete scripts devDependencies
+      - name: Lint
+        run: npm run lint
 
-            -   name: Release
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-                run: npx semantic-release
+      - name: Test
+        run: npm run test
+
+      - name: Cleanup
+        run: npm pkg delete scripts devDependencies
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release

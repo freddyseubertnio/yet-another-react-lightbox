@@ -1,17 +1,16 @@
-import { useLightboxProps } from "../../core/index.js";
-import { LightboxProps } from "../../types.js";
+import { LightboxProps, useLightboxProps } from "../../index.js";
 
 export const defaultVideoProps = {
-    controls: true,
-    playsInline: true,
+  controls: true,
+  playsInline: true,
 };
 
 export const resolveVideoProps = (video: LightboxProps["video"]) => ({
-    ...defaultVideoProps,
-    ...video,
+  ...defaultVideoProps,
+  ...video,
 });
 
 export function useVideoProps() {
-    const { video } = useLightboxProps();
-    return resolveVideoProps(video);
+  const { video } = useLightboxProps();
+  return resolveVideoProps(video);
 }

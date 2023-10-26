@@ -1,41 +1,45 @@
 import * as React from "react";
 
-import { LightboxProps, Slide } from "../../types.js";
-import { clsx, cssVar, useLightboxProps } from "../../core/index.js";
-import { defaultCaptionsProps, resolveCaptionsProps } from "./props.js";
+import { clsx, cssVar, Slide, useLightboxProps } from "../../index.js";
 import { cssPrefix } from "./utils.js";
+import { defaultCaptionsProps, useCaptionsProps } from "./props.js";
+import { useCaptions } from "./CaptionsContext.js";
 
-export type DescriptionProps = Required<Pick<Slide, "description">> & Pick<LightboxProps, "styles">;
+export type DescriptionProps = Pick<Slide, "description">;
 
-export function Description({ description, styles }: DescriptionProps) {
-    const { captions } = useLightboxProps();
-    const { descriptionTextAlign, descriptionMaxLines } = resolveCaptionsProps(captions);
+export function Description({ description }: DescriptionProps) {
+  const { descriptionTextAlign, descriptionMaxLines } = useCaptionsProps();
+  const { styles } = useLightboxProps();
+  const { visible } = useCaptions();
 
-    // noinspection SuspiciousTypeOfGuard
-    return (
-        <div
-            style={styles.captionsDescriptionContainer}
-            className={clsx(cssPrefix("captions_container"), cssPrefix("description_container"))}
-        >
-            <div
-                className={cssPrefix("description")}
-                style={{
-                    ...(descriptionTextAlign !== defaultCaptionsProps.descriptionTextAlign ||
-                    descriptionMaxLines !== defaultCaptionsProps.descriptionMaxLines
-                        ? {
-                              [cssVar("slide_description_text_align")]: descriptionTextAlign,
-                              [cssVar("slide_description_max_lines")]: descriptionMaxLines,
-                          }
-                        : null),
-                    ...styles.captionsDescription,
-                }}
-            >
-                {typeof description === "string"
-                    ? description
-                          .split("\n")
-                          .flatMap((line, index) => [...(index > 0 ? [<br key={index} />] : []), line])
-                    : description}
-            </div>
-        </div>
-    );
+  if (!visible) return null;
+
+  // noinspection SuspiciousTypeOfGuard
+  return (
+    <div
+      style={styles.captionsDescriptionContainer}
+      className={clsx(cssPrefix("captions_container"), cssPrefix("description_container"))}
+    >
+      <div
+        className={cssPrefix("description")}
+        style={{
+          ...(descriptionTextAlign !== defaultCaptionsProps.descriptionTextAlign ||
+          descriptionMaxLines !== defaultCaptionsProps.descriptionMaxLines
+            ? {
+                [cssVar("slide_description_text_align")]: descriptionTextAlign,
+                [cssVar("slide_description_max_lines")]: descriptionMaxLines,
+              }
+            : null),
+          ...styles.captionsDescription,
+        }}
+      >
+        {typeof description === "string"
+          ? description
+              .split("\n")
+              // eslint-disable-next-line react/no-array-index-key
+              .flatMap((line, index) => [...(index > 0 ? [<br key={index} />] : []), line])
+          : description}
+      </div>
+    </div>
+  );
 }
