@@ -38,7 +38,6 @@ export type ThumbnailsTrackProps = {
 export function ThumbnailsTrack({ visible }: ThumbnailsTrackProps) {
   const track = React.useRef<HTMLDivElement>(null);
   const trackContainerRef = React.useRef<HTMLDivElement>(null);
-
   const isRTL = useRTL();
   const { publish } = useEvents();
   const { carousel, styles } = useLightboxProps();
@@ -78,45 +77,23 @@ export function ThumbnailsTrack({ visible }: ThumbnailsTrackProps) {
 
   if (hasSlides(slides)) {
     // create loop goin through slides adn pushes them to items array
-    slides.forEach((slide, index2) => {
-      items.push({ slide, index: index2 });
+    slides.forEach((slide, i) => {
+      items.push({ slide, index: i });
     });
-
-    // if (offset < 0) {
-    //   for (let i = index - preload + offset; i < index - preload; i += 1) {
-    //     items.push({ slide: null, index: i, placeholder: true });
-    //   }
-    // }
-
-    // for (let i = index - preload - Math.max(offset, 0); i < index; i += 1) {
-    //   if (!(carousel.finite && i < 0)) {
-    //     items.push({ slide: getSlide(slides, i), index: i });
-    //   } else {
-    //     items.push({ slide: null, index: i, placeholder: true });
-    //   }
-    // }
-
-    // items.push({ slide: getSlide(slides, index), index });
-
-    // for (let i = index + 1; i <= index + preload - Math.min(offset, 0); i += 1) {
-    //   if (!carousel.finite || i <= slides.length - 1) {
-    //     items.push({ slide: getSlide(slides, i), index: i });
-    //   } else {
-    //     items.push({ slide: null, index: i, placeholder: true });
-    //   }
-    // }
-
-    // if (offset > 0) {
-    //   for (let i = index + preload + 1; i <= index + preload + offset; i += 1) {
-    //     items.push({ slide: null, index: i, placeholder: true });
-    //   }
-    // }
   }
 
   // Adjsust track position so active thumbnail is visible
   React.useEffect(() => {
+    const unactiveThumbnails = document.querySelectorAll(
+      ".yarl__thumbnails_thumbnail:not(.yarl__thumbnails_thumbnail_active)",
+    );
+    for (let i = 0; i < unactiveThumbnails.length; i += 1) {
+      (unactiveThumbnails[i] as HTMLElement).blur();
+    }
+
     const activeThumbnail = document.getElementsByClassName("yarl__thumbnails_thumbnail_active")[0];
     activeThumbnail.scrollIntoView();
+    (activeThumbnail as HTMLElement).focus();
   }, [index]);
 
   const handleClick = (slideIndex: number) => () => {
@@ -160,31 +137,6 @@ export function ThumbnailsTrack({ visible }: ThumbnailsTrackProps) {
         {...registerSensors}
       >
         {items.map(({ slide, index: slideIndex, placeholder }) => {
-          // const fadeAnimationDuration = animationDuration / Math.abs(offset || 1);
-
-          // const fadeIn =
-          //   (offset > 0 && slideIndex > index + preload - offset && slideIndex <= index + preload) ||
-          //   (offset < 0 && slideIndex < index - preload - offset && slideIndex >= index - preload)
-          //     ? {
-          //         duration: fadeAnimationDuration,
-          //         delay:
-          //           ((offset > 0 ? slideIndex - (index + preload - offset) : index - preload - offset - slideIndex) -
-          //             1) *
-          //           fadeAnimationDuration,
-          //       }
-          //     : undefined;
-
-          // const fadeOut =
-          //   (offset > 0 && slideIndex < index - preload) || (offset < 0 && slideIndex > index + preload)
-          //     ? {
-          //         duration: fadeAnimationDuration,
-          //         delay:
-          //           (offset > 0
-          //             ? offset - (index - preload - slideIndex)
-          //             : -offset - (slideIndex - (index + preload))) * fadeAnimationDuration,
-          //       }
-          //     : undefined;
-
           return (
             <Thumbnail
               key={slideIndex}
@@ -194,7 +146,9 @@ export function ThumbnailsTrack({ visible }: ThumbnailsTrackProps) {
               // fadeOut={fadeOut}
               placeholder={Boolean(placeholder)}
               onClick={handleClick(slideIndex)}
-              onLoseFocus={() => track.current?.focus()}
+              onLoseFocus={() => {
+                track.current?.focus();
+              }}
             />
           );
         })}

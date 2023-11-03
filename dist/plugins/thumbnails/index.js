@@ -191,13 +191,20 @@ function ThumbnailsTrack({ visible }) {
   calculatePreload(carousel, slides);
   const items = [];
   if (hasSlides(slides)) {
-    slides.forEach((slide, index2) => {
-      items.push({ slide: slide, index: index2 });
+    slides.forEach((slide, i) => {
+      items.push({ slide: slide, index: i });
     });
   }
   React.useEffect(() => {
+    const unactiveThumbnails = document.querySelectorAll(
+      ".yarl__thumbnails_thumbnail:not(.yarl__thumbnails_thumbnail_active)",
+    );
+    for (let i = 0; i < unactiveThumbnails.length; i = i + 1) {
+      unactiveThumbnails[i].blur();
+    }
     const activeThumbnail = document.getElementsByClassName("yarl__thumbnails_thumbnail_active")[0];
     activeThumbnail.scrollIntoView();
+    activeThumbnail.focus();
   }, [index]);
   const handleClick = (slideIndex) => () => {
     if (slideIndex > index) {
@@ -250,7 +257,7 @@ function ThumbnailsTrack({ visible }) {
           onClick: handleClick(slideIndex),
           onLoseFocus: () => {
             var _a;
-            return (_a = track.current) === null || _a === void 0 ? void 0 : _a.focus();
+            (_a = track.current) === null || _a === void 0 ? void 0 : _a.focus();
           },
         });
       }),
