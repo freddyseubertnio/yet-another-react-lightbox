@@ -383,6 +383,7 @@ export type Labels = {
 /** Toolbar settings */
 export interface ToolbarSettings {
   /** buttons to render in the toolbar */
+  title: any;
   buttons: (ToolbarButtonKey | React.ReactNode)[];
 }
 

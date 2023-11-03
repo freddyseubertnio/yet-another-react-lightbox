@@ -3,18 +3,14 @@ import * as React from "react";
 import {
   ACTION_NEXT,
   ACTION_PREV,
-  ACTION_SWIPE,
   calculatePreload,
   CLASS_FLEX_CENTER,
-  cleanup,
   clsx,
   cssClass,
   cssVar,
-  getSlide,
   hasSlides,
   Slide,
   useAnimation,
-  useEventCallback,
   useEvents,
   useKeyboardNavigation,
   useLightboxProps,
@@ -39,11 +35,12 @@ export type ThumbnailsTrackProps = {
   containerRef: React.RefObject<HTMLDivElement>;
 };
 
-export function ThumbnailsTrack({ visible, containerRef }: ThumbnailsTrackProps) {
+export function ThumbnailsTrack({ visible }: ThumbnailsTrackProps) {
   const track = React.useRef<HTMLDivElement>(null);
+  const trackContainerRef = React.useRef<HTMLDivElement>(null);
 
   const isRTL = useRTL();
-  const { publish, subscribe } = useEvents();
+  const { publish } = useEvents();
   const { carousel, styles } = useLightboxProps();
   const { slides, globalIndex, animation } = useLightboxState();
   const { registerSensors, subscribeSensors } = useSensors();
@@ -57,7 +54,7 @@ export function ThumbnailsTrack({ visible, containerRef }: ThumbnailsTrackProps)
   const animationDuration = animation?.duration || 0;
   const offset = (animationDuration > 0 && animation?.increment) || 0;
 
-  const { prepareAnimation } = useAnimation<number>(track, (snapshot) => ({
+  useAnimation<number>(track, (snapshot) => ({
     keyframes: isHorizontal(position)
       ? [
           {
@@ -75,56 +72,52 @@ export function ThumbnailsTrack({ visible, containerRef }: ThumbnailsTrackProps)
     easing: animation?.easing,
   }));
 
-  const handleControllerSwipe = useEventCallback(() => {
-    let animationOffset = 0;
-    if (containerRef.current && track.current) {
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const trackRect = track.current.getBoundingClientRect();
-      animationOffset = isHorizontal(position)
-        ? trackRect.left - containerRect.left - (containerRect.width - trackRect.width) / 2
-        : trackRect.top - containerRect.top - (containerRect.height - trackRect.height) / 2;
-    }
-
-    prepareAnimation(animationOffset);
-  });
-
-  React.useEffect(() => cleanup(subscribe(ACTION_SWIPE, handleControllerSwipe)), [subscribe, handleControllerSwipe]);
-
-  const preload = calculatePreload(carousel, slides);
+  calculatePreload(carousel, slides);
 
   const items: { slide: Slide | null; index: number; placeholder?: boolean }[] = [];
 
   if (hasSlides(slides)) {
-    if (offset < 0) {
-      for (let i = index - preload + offset; i < index - preload; i += 1) {
-        items.push({ slide: null, index: i, placeholder: true });
-      }
-    }
+    // create loop goin through slides adn pushes them to items array
+    slides.forEach((slide, index2) => {
+      items.push({ slide, index: index2 });
+    });
 
-    for (let i = index - preload - Math.max(offset, 0); i < index; i += 1) {
-      if (!(carousel.finite && i < 0)) {
-        items.push({ slide: getSlide(slides, i), index: i });
-      } else {
-        items.push({ slide: null, index: i, placeholder: true });
-      }
-    }
+    // if (offset < 0) {
+    //   for (let i = index - preload + offset; i < index - preload; i += 1) {
+    //     items.push({ slide: null, index: i, placeholder: true });
+    //   }
+    // }
 
-    items.push({ slide: getSlide(slides, index), index });
+    // for (let i = index - preload - Math.max(offset, 0); i < index; i += 1) {
+    //   if (!(carousel.finite && i < 0)) {
+    //     items.push({ slide: getSlide(slides, i), index: i });
+    //   } else {
+    //     items.push({ slide: null, index: i, placeholder: true });
+    //   }
+    // }
 
-    for (let i = index + 1; i <= index + preload - Math.min(offset, 0); i += 1) {
-      if (!carousel.finite || i <= slides.length - 1) {
-        items.push({ slide: getSlide(slides, i), index: i });
-      } else {
-        items.push({ slide: null, index: i, placeholder: true });
-      }
-    }
+    // items.push({ slide: getSlide(slides, index), index });
 
-    if (offset > 0) {
-      for (let i = index + preload + 1; i <= index + preload + offset; i += 1) {
-        items.push({ slide: null, index: i, placeholder: true });
-      }
-    }
+    // for (let i = index + 1; i <= index + preload - Math.min(offset, 0); i += 1) {
+    //   if (!carousel.finite || i <= slides.length - 1) {
+    //     items.push({ slide: getSlide(slides, i), index: i });
+    //   } else {
+    //     items.push({ slide: null, index: i, placeholder: true });
+    //   }
+    // }
+
+    // if (offset > 0) {
+    //   for (let i = index + preload + 1; i <= index + preload + offset; i += 1) {
+    //     items.push({ slide: null, index: i, placeholder: true });
+    //   }
+    // }
   }
+
+  // Adjsust track position so active thumbnail is visible
+  React.useEffect(() => {
+    const activeThumbnail = document.getElementsByClassName("yarl__thumbnails_thumbnail_active")[0];
+    activeThumbnail.scrollIntoView();
+  }, [index]);
 
   const handleClick = (slideIndex: number) => () => {
     if (slideIndex > index) {
@@ -136,6 +129,7 @@ export function ThumbnailsTrack({ visible, containerRef }: ThumbnailsTrackProps)
 
   return (
     <div
+      ref={trackContainerRef}
       className={clsx(cssClass(cssPrefix("container")), cssClass(CLASS_FLEX_CENTER))}
       style={{
         ...(!visible ? { display: "none" } : null),
@@ -166,38 +160,38 @@ export function ThumbnailsTrack({ visible, containerRef }: ThumbnailsTrackProps)
         {...registerSensors}
       >
         {items.map(({ slide, index: slideIndex, placeholder }) => {
-          const fadeAnimationDuration = animationDuration / Math.abs(offset || 1);
+          // const fadeAnimationDuration = animationDuration / Math.abs(offset || 1);
 
-          const fadeIn =
-            (offset > 0 && slideIndex > index + preload - offset && slideIndex <= index + preload) ||
-            (offset < 0 && slideIndex < index - preload - offset && slideIndex >= index - preload)
-              ? {
-                  duration: fadeAnimationDuration,
-                  delay:
-                    ((offset > 0 ? slideIndex - (index + preload - offset) : index - preload - offset - slideIndex) -
-                      1) *
-                    fadeAnimationDuration,
-                }
-              : undefined;
+          // const fadeIn =
+          //   (offset > 0 && slideIndex > index + preload - offset && slideIndex <= index + preload) ||
+          //   (offset < 0 && slideIndex < index - preload - offset && slideIndex >= index - preload)
+          //     ? {
+          //         duration: fadeAnimationDuration,
+          //         delay:
+          //           ((offset > 0 ? slideIndex - (index + preload - offset) : index - preload - offset - slideIndex) -
+          //             1) *
+          //           fadeAnimationDuration,
+          //       }
+          //     : undefined;
 
-          const fadeOut =
-            (offset > 0 && slideIndex < index - preload) || (offset < 0 && slideIndex > index + preload)
-              ? {
-                  duration: fadeAnimationDuration,
-                  delay:
-                    (offset > 0
-                      ? offset - (index - preload - slideIndex)
-                      : -offset - (slideIndex - (index + preload))) * fadeAnimationDuration,
-                }
-              : undefined;
+          // const fadeOut =
+          //   (offset > 0 && slideIndex < index - preload) || (offset < 0 && slideIndex > index + preload)
+          //     ? {
+          //         duration: fadeAnimationDuration,
+          //         delay:
+          //           (offset > 0
+          //             ? offset - (index - preload - slideIndex)
+          //             : -offset - (slideIndex - (index + preload))) * fadeAnimationDuration,
+          //       }
+          //     : undefined;
 
           return (
             <Thumbnail
               key={slideIndex}
               slide={slide}
               active={slideIndex === index}
-              fadeIn={fadeIn}
-              fadeOut={fadeOut}
+              // fadeIn={fadeIn}
+              // fadeOut={fadeOut}
               placeholder={Boolean(placeholder)}
               onClick={handleClick(slideIndex)}
               onLoseFocus={() => track.current?.focus()}

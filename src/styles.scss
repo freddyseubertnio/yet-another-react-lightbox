@@ -65,11 +65,12 @@
     }
   }
 
+
   &_flex_center {
-    display: flex;
-    justify-content: center;
+    display: flex;    
     align-content: center;
     align-items: center;
+    justify-content: center;
   }
 
   &_slide {
@@ -161,12 +162,13 @@
 
   &_toolbar {
     position: absolute;
-    top: 0;
+    top: 0;    
+    left: 0;
     right: 0;
-    bottom: auto;
-    left: auto;
+    bottom: auto;    
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     padding: globalVar(toolbar_padding, $toolbar-padding);
 
     [dir="rtl"] & {
@@ -175,6 +177,13 @@
       bottom: auto;
       left: 0;
     }
+  }
+
+  &_toolbar_buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
   }
 
   &_icon {

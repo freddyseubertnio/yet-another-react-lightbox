@@ -5,6 +5,8 @@ export const MODULE_NO_SCROLL = "no-scroll";
 export const MODULE_PORTAL = "portal";
 export const MODULE_ROOT = "root";
 export const MODULE_TOOLBAR = "toolbar";
+export const TOOLBAR_TITLE = "title";
+export const TOOLBAR_BUTTONS = "buttons";
 
 export const PLUGIN_CAPTIONS = "captions";
 export const PLUGIN_COUNTER = "counter";

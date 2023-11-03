@@ -7,13 +7,13 @@ import { composePrefix, cssClass, stopNavigationEventsPropagation } from "../uti
 import { CloseIcon, IconButton } from "../components/index.js";
 import { useContainerRect } from "../hooks/useContainerRect.js";
 import { useController } from "./Controller/index.js";
-import { ACTION_CLOSE, MODULE_TOOLBAR } from "../consts.js";
+import { ACTION_CLOSE, MODULE_TOOLBAR, TOOLBAR_TITLE, TOOLBAR_BUTTONS } from "../consts.js";
 
 function cssPrefix(value?: string) {
   return composePrefix(MODULE_TOOLBAR, value);
 }
 
-export function Toolbar({ toolbar: { buttons }, render: { buttonClose, iconClose }, styles }: ComponentProps) {
+export function Toolbar({ toolbar: { buttons, title }, render: { buttonClose, iconClose }, styles }: ComponentProps) {
   const { close, setToolbarWidth } = useController();
   const { setContainerRef, containerRect } = useContainerRect();
 
@@ -34,7 +34,10 @@ export function Toolbar({ toolbar: { buttons }, render: { buttonClose, iconClose
       className={cssClass(cssPrefix())}
       {...stopNavigationEventsPropagation()}
     >
-      {buttons?.map((button) => (button === ACTION_CLOSE ? renderCloseButton() : button))}
+      <div className={cssClass(cssPrefix(TOOLBAR_TITLE))}>{title}</div>
+      <div className={cssClass(cssPrefix(TOOLBAR_BUTTONS))}>
+        {buttons?.map((button) => (button === ACTION_CLOSE ? renderCloseButton() : button))}
+      </div>
     </div>
   );
 }

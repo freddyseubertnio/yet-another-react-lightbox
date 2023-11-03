@@ -5,6 +5,8 @@ const MODULE_NO_SCROLL = "no-scroll";
 const MODULE_PORTAL = "portal";
 const MODULE_ROOT = "root";
 const MODULE_TOOLBAR = "toolbar";
+const TOOLBAR_TITLE = "title";
+const TOOLBAR_BUTTONS = "buttons";
 const PLUGIN_CAPTIONS = "captions";
 const PLUGIN_COUNTER = "counter";
 const PLUGIN_DOWNLOAD = "download";
@@ -95,6 +97,8 @@ export {
   SLIDE_STATUS_LOADING,
   SLIDE_STATUS_PLACEHOLDER,
   SLIDE_STATUS_PLAYING,
+  TOOLBAR_BUTTONS,
+  TOOLBAR_TITLE,
   UNKNOWN_ACTION_TYPE,
   VK_ARROW_LEFT,
   VK_ARROW_RIGHT,

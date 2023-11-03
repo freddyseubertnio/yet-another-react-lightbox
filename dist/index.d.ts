@@ -93,6 +93,8 @@ export {
   Slot,
   SlotStyles,
   SlotType,
+  TOOLBAR_BUTTONS,
+  TOOLBAR_TITLE,
   ToolbarButtonKey,
   ToolbarButtonKeys,
   UNKNOWN_ACTION_TYPE,
@@ -483,7 +485,7 @@ declare function Root({ children }: ComponentProps): React.JSX.Element;
 declare const RootModule: Module;
 
 declare function Toolbar({
-  toolbar: { buttons },
+  toolbar: { buttons, title },
   render: { buttonClose, iconClose },
   styles,
 }: ComponentProps): React.JSX.Element;

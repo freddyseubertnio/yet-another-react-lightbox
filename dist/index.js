@@ -37,6 +37,8 @@ import {
   MODULE_PORTAL,
   MODULE_ROOT,
   MODULE_TOOLBAR,
+  TOOLBAR_TITLE,
+  TOOLBAR_BUTTONS,
 } from "./types.js";
 import { createPortal } from "react-dom";
 export {
@@ -63,7 +65,7 @@ const LightboxDefaultProps = {
   slides: [],
   render: {},
   plugins: [],
-  toolbar: { buttons: [ACTION_CLOSE] },
+  toolbar: { title: "", buttons: [ACTION_CLOSE] },
   labels: {},
   animation: {
     fade: 250,
@@ -1455,16 +1457,6 @@ function Controller({ children, ...props }) {
     animation.swipe,
     () => setSwipeState(SwipeState.SWIPE),
     (offset) => setSwipeOffset(offset),
-    (offset, duration) => swipe({ offset, duration, count: 1 }),
-    (offset) => swipe({ offset, count: 0 }),
-  ];
-  const customSwipeParams = [
-    subscribeSensors,
-    isSwipeValid,
-    (containerRect === null || containerRect === void 0 ? void 0 : containerRect.width) || 0,
-    animation.swipe,
-    () => setSwipeState(SwipeState.SWIPE),
-    (offset) => setSwipeOffset(offset),
     (offset, duration) => customSwipe({ offset, duration, count: 1 }),
     (offset) => customSwipe({ offset, count: 0 }),
   ];
@@ -1478,8 +1470,8 @@ function Controller({ children, ...props }) {
     (offset) => pullDown(offset),
     (offset) => pullDown(offset, true),
   ];
-  usePointerSwipe(...customSwipeParams, closeOnPullDown, ...pullDownParams);
-  useWheelSwipe(swipeState, ...customSwipeParams);
+  usePointerSwipe(...swipeParams, closeOnPullDown, ...pullDownParams);
+  useWheelSwipe(swipeState, ...swipeParams);
   const focusOnMount = useEventCallback(() => {
     var _a;
     if (controller.focus) {
@@ -1948,7 +1940,7 @@ const RootModule = createModule(MODULE_ROOT, Root);
 function cssPrefix(value) {
   return composePrefix(MODULE_TOOLBAR, value);
 }
-function Toolbar({ toolbar: { buttons }, render: { buttonClose, iconClose }, styles }) {
+function Toolbar({ toolbar: { buttons, title }, render: { buttonClose, iconClose }, styles }) {
   const { close, setToolbarWidth } = useController();
   const { setContainerRef, containerRect } = useContainerRect();
   useLayoutEffect(() => {
@@ -1972,9 +1964,14 @@ function Toolbar({ toolbar: { buttons }, render: { buttonClose, iconClose }, sty
       className: cssClass(cssPrefix()),
       ...stopNavigationEventsPropagation(),
     },
-    buttons === null || buttons === void 0
-      ? void 0
-      : buttons.map((button) => (button === ACTION_CLOSE ? renderCloseButton() : button)),
+    React.createElement("div", { className: cssClass(cssPrefix(TOOLBAR_TITLE)) }, title),
+    React.createElement(
+      "div",
+      { className: cssClass(cssPrefix(TOOLBAR_BUTTONS)) },
+      buttons === null || buttons === void 0
+        ? void 0
+        : buttons.map((button) => (button === ACTION_CLOSE ? renderCloseButton() : button)),
+    ),
   );
 }
 const ToolbarModule = createModule(MODULE_TOOLBAR, Toolbar);
@@ -2129,6 +2126,8 @@ export {
   SLIDE_STATUS_LOADING,
   SLIDE_STATUS_PLACEHOLDER,
   SwipeState,
+  TOOLBAR_BUTTONS,
+  TOOLBAR_TITLE,
   TimeoutsContext,
   TimeoutsProvider,
   Toolbar,

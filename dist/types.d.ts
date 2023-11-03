@@ -7,6 +7,8 @@ declare const MODULE_NO_SCROLL = "no-scroll";
 declare const MODULE_PORTAL = "portal";
 declare const MODULE_ROOT = "root";
 declare const MODULE_TOOLBAR = "toolbar";
+declare const TOOLBAR_TITLE = "title";
+declare const TOOLBAR_BUTTONS = "buttons";
 declare const PLUGIN_CAPTIONS = "captions";
 declare const PLUGIN_COUNTER = "counter";
 declare const PLUGIN_DOWNLOAD = "download";
@@ -391,6 +393,7 @@ type Labels = {
 /** Toolbar settings */
 interface ToolbarSettings {
   /** buttons to render in the toolbar */
+  title: any;
   buttons: (ToolbarButtonKey | React.ReactNode)[];
 }
 type ToolbarButtonKey = keyof ToolbarButtonKeys;
@@ -535,6 +538,8 @@ export {
   type Slot,
   type SlotStyles,
   type SlotType,
+  TOOLBAR_BUTTONS,
+  TOOLBAR_TITLE,
   type ToolbarButtonKey,
   type ToolbarButtonKeys,
   type ToolbarSettings,

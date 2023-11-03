@@ -8,7 +8,7 @@ export const LightboxDefaultProps: LightboxProps = {
   slides: [],
   render: {},
   plugins: [],
-  toolbar: { buttons: [ACTION_CLOSE] },
+  toolbar: { title: "", buttons: [ACTION_CLOSE] },
   labels: {},
   animation: {
     fade: 250,
